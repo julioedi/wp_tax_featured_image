@@ -62,7 +62,7 @@ echo '</form>';
 
 
 $txts = array(
-    "title" => __('Select or Upload an Image', 'julioedi_advance_featured_image_path'),
-    "text" => __('Use this image', 'julioedi_advance_featured_image_path')
+    "title" => __('Select or Upload an Image', 'julioedi-advance-featured-image'),
+    "text" => __('Use this image', 'julioedi-advance-featured-image')
 );
 echo "<script>window.__wp_adv_featured_image_msg = " . json_encode($txts) . " </script>";

@@ -4,7 +4,7 @@ namespace julioEdi\AdvanceFeaturedImage;
 
 class Tax
 {
-  public $taxonomy_table_col_id = "cover_image_column";
+  public $taxonomy_table_col_id = "featured_image";
   public $featured_media_taxonomies = [
     "category" => true,
     "post_tag" => true,
@@ -18,29 +18,64 @@ class Tax
   {
     $this->edit();
     $this->save();
-    add_action("admin_init", function () {
-      self::taxonomies_featured_image();
-    });
-    // add_action("admin_head", [$this, "enqueue_admin"]);
     add_action("delete_post", [$this, "on_delete_post"]);
+    add_filter("get_term", [$this, "single_term"], 1);
+    add_filter("get_terms", [$this, "all_terms"], 1);
+  }
+
+  public function single_term($term)
+  {
+    if (is_object($term) && isset($term->term_id)) {
+      $thumbnail_id = (int) get_term_meta($term->term_id, self::$column, true);
+      $term->{self::$column} = $thumbnail_id;
+    }
+    return $term;
   }
 
 
-  public function on_delete_post($id)
+  public function all_terms($terms)
   {
     global $wpdb;
-    $table_name = $wpdb->terms;
+    if (empty($terms)) return $terms;
+
     $column = self::$column;
+    $term_ids = wp_list_pluck($terms, 'term_id');
+    $placeholders = implode(',', array_fill(0, count($term_ids), '%d'));
+
+    $results = $wpdb->get_results(
+      $wpdb->prepare(
+        "SELECT term_id, meta_value FROM {$wpdb->termmeta} WHERE meta_key = %s AND term_id IN ($placeholders)",
+        $column,
+        ...$term_ids
+      ),
+      OBJECT_K
+    );
+
+    foreach ($terms as &$term) {
+      if (isset($results[$term->term_id])) {
+        $term->_thumbnail_id = (int) $results[$term->term_id]->meta_value;
+      } else {
+        $term->_thumbnail_id = 0;
+      }
+    }
+    return $terms;
+  }
+
+
+  public function on_delete_post($post_id)
+  {
+    global $wpdb;
+    $meta_key = self::$column;
+
+    // Delete all term meta entries where meta_key = '_thumbnail_id' and meta_value = $post_id
     $wpdb->query(
-      $wpdb->prepare("UPDATE `$table_name` SET `$column` = '' WHERE `$column` = %d", $id)
+      $wpdb->prepare(
+        "DELETE FROM {$wpdb->termmeta} WHERE meta_key = %s AND meta_value = %d",
+        $meta_key,
+        $post_id
+      )
     );
   }
-
-  public function on_activate()
-  {
-    // register_activation_hook(julioedi_advance_featured_image_path, );
-  }
-
 
 
   /**
@@ -50,7 +85,6 @@ class Tax
   {
     $pre = $this->featured_media_taxonomies;
 
-    add_action('quick_edit_custom_box', [$this, "add_quick_edit_field"], 10);
     global $wp_taxonomies;
     foreach ($wp_taxonomies as $key => $value) {
       $pre[$key] = $value->public && $value->show_ui;
@@ -63,7 +97,7 @@ class Tax
         continue;
       }
       add_action("{$key}_edit_form_fields", [$this, "taxonomies_include_cover_image"]);
-      add_action("{$key}_term_new_form_tag", [$this, "taxonomies_include_cover_image"]);
+      add_action("{$key}_add_form_fields", [$this, "taxonomies_include_cover_image"]);
 
       add_action("manage_edit-{$key}_columns", [$this, "taxonomies_table_head"]);
       add_action("manage_{$key}_custom_column", [$this, "taxonomies_table_column"], 10, 3);
@@ -87,49 +121,24 @@ class Tax
   }
 
   /**
-   * Ensures the database is ready by adding the _thumbnail_id column if it doesn't exist
-   */
-  public static function taxonomies_featured_image(bool $default = false)
-  {
-    $activated = false; //get_option("julioedi_advance_featured_image_inited",$default);
-    if ($activated) {
-      return;
-    }
-    global $wpdb;
-
-    $table_name = $wpdb->terms;
-    $column = self::$column;
-
-    // Check if the column already exists
-    $column_exists = $wpdb->get_results(
-      $wpdb->prepare("SHOW COLUMNS FROM `$table_name` LIKE %s", $column)
-    );
-
-    // If the column doesn't exist, create it
-    if (empty($column_exists)) {
-      $wpdb->query(
-        "ALTER TABLE `$table_name` ADD {$column} BIGINT UNSIGNED DEFAULT 0"
-      );
-      update_option("julioedi_advance_featured_image_inited", true);
-    }
-  }
-
-
-
-
-  /**
    * Adds a custom column for the featured image in the term management table
    */
   public function taxonomies_table_head($columns)
   {
-    foreach ($columns as $key => $value) {
-      $new[$key] = $value;
-      if ($key == "cb" && !isset($columns[$this->taxonomy_table_col_id])) {
-        $new[$this->taxonomy_table_col_id] = "&nbsp;";
+    if (!isset($columns[$this->taxonomy_table_col_id])) {
+      // Insertar la columna después del checkbox (cb)
+      $new_columns = [];
+      foreach ($columns as $key => $value) {
+        $new_columns[$key] = $value;
+        if ($key === 'cb') {
+          $new_columns[$this->taxonomy_table_col_id] = "&nbsp;";
+        }
       }
+      return $new_columns;
     }
-    return $new;
+    return $columns;
   }
+
 
   /**
    * Populates the custom column with the term's featured image
@@ -144,55 +153,42 @@ class Tax
     return $content !== "" ? $content :  '<div class="empty"><i class="fa-solid fa-trash"></i></div>';
   }
 
-  function add_quick_edit_field($taxonomy)
-  {
-    global $pagenow;
 
-    // Verificar si estamos en la página de edición de categorías
-    if ($pagenow === 'edit-tags.php') {
-?>
-      <div class="inline-edit-col">
-        <label>
-          <span class="title">Campo Personalizado</span>
-          <input type="text" name="mi_campo_personalizado" value="">
-        </label>
-      </div>
-    <?php
-    }
-    return $taxonomy;
+  public function get_sanitized_thumbnail_id(): int
+  {
+    $column = self::$column;
+    return isset($_POST[$column]) && wp_attachment_is_image($_POST[$column]) ? absint($_POST[$column]) : 0;
   }
 
   /**
    * Saves the selected thumbnail ID when a term is created or edited
    */
-  public function save_thumbnail_id($term_id)
+  public function save_thumbnail_id(int $term_id): void
   {
-    // Sanitize and validate the thumbnail ID
-    $_thumbnail_id = sanitize_text_field($_POST['_thumbnail_id'] ?? "0");
-    if (!is_numeric($_thumbnail_id)) {
+    if (!current_user_can('manage_categories')) {
       return;
     }
 
-    // Check if the ID corresponds to a valid image
-    $is_image = wp_get_attachment_metadata($_thumbnail_id);
-    $_thumbnail_id = (int) $_thumbnail_id;
-    if (!$is_image) {
-      $_thumbnail_id = "0"; // Reset if not a valid image
+    $col = self::$column;
+    if (!isset($_POST["{$col}_nonce"]) || !wp_verify_nonce($_POST["{$col}_nonce"], "save_term{$col}")) {
+      return;
     }
 
-    global $wpdb;
-    // Update the term taxonomy table with the valid thumbnail ID
-    $wpdb->update(
-      $wpdb->terms,
-      array(
-        '_thumbnail_id' => $_thumbnail_id,
-      ),
-      array('term_id' => $term_id),
-      array("%d"),
-      array("%d"),
-    );
-    return $term_id;
+    if (!isset($_POST[$col])) {
+      return;
+    }
+
+    $thumbnail_id = absint($_POST[$col]);
+
+    if ($thumbnail_id > 0 && !wp_attachment_is_image($thumbnail_id)) {
+      $thumbnail_id = 0;
+    }
+
+    update_term_meta($term_id, self::$column, $thumbnail_id);
   }
+
+
+
 
   /**
    * Displays the UI for selecting a featured image in the term edit form
@@ -202,27 +198,32 @@ class Tax
     global $pagenow;
     $is_new = $pagenow == "edit-tags.php";
 
+
+
     if ($is_new) {
       // Close the form tag early to prevent open tags
       echo ">";
     }
-
+    $column = self::$column;
     $list = (array) $tag;
-    $thumbnail_id = $list["_thumbnail_id"] ?? "0";
+    $thumbnail_id = $list[$column] ?? "0";
     $is_image = wp_get_attachment_url($thumbnail_id);
+
+
+    echo wp_nonce_field("save_term{$column}", "{$column}_nonce");
     $deletebtn = '<div class="delete_cover"><div class="tax_icon_button"><i class="fa-solid fa-trash"></i></div></div>';
 
     if (!empty($is_image)) {
       // If there's an image, show it with a delete button
       $is_image = sprintf('<img src="%s" data-id="%s">' . $deletebtn, $is_image, $thumbnail_id);
     }
-    
-    julioedi_adv_featured_template_select_image($thumbnail_id,$is_new ? "new_tag" : "edit_tag");
+
+    julioedi_adv_featured_template_select_image($thumbnail_id, $is_new ? "new_tag" : "edit_tag");
     $txts = array(
-      "title" => __('Select or Upload an Image','julioedi_advance_featured_image_path'),
-      "text" => __('Use this image','julioedi_advance_featured_image_path')
+      "title" => __('Select or Upload an Image', 'julioedi-advance-featured-image"'),
+      "text" => __('Use this image', 'julioedi-advance-featured-image')
     );
-    echo "<script>window.__wp_adv_featured_image_msg = " . json_encode($txts) ." </script>";
+    echo "<script>window.__wp_adv_featured_image_msg = " . wp_json_encode($txts) . " </script>";
 
     if ($is_new) {
       // Close the form tag
@@ -269,9 +270,7 @@ class Tax
     if (!$term) {
       return 0; // Return 0 if no term is found
     }
-    if (!isset($term->{self::$column})) {
-      # code...
-    }
+
     return $term->{self::$column} ?? 0; // Return the thumbnail ID
   }
 
@@ -290,8 +289,8 @@ class Tax
      *                              an array of width and height values in pixels (in that order).
      * @param int          $id The term ID.
      */
-    $size = apply_filters('term_thumbnail_size', $size, $id);
+    $size = apply_filters('julioedi/adv_featured/term/size', $size, $id);
     $html = wp_get_attachment_image($term_thumbnail_id, $size, false, $attr);
-    return apply_filters('term_thumbnail_html', $html, $id, $term_thumbnail_id, $size, $attr);
+    return apply_filters('julioedi/adv_featured/term/html', $html, $id, $term_thumbnail_id, $size, $attr);
   }
 }
