@@ -36,31 +36,50 @@ class Tax
   public function all_terms($terms)
   {
     global $wpdb;
-    if (empty($terms)) return $terms;
 
-    $column = self::$column;
-    $term_ids = wp_list_pluck($terms, 'term_id');
+    // Bail early if empty or not array
+    if (empty($terms) || !is_array($terms)) {
+      return $terms;
+    }
+
+    // Filter to only objects or arrays
+    $valid_terms = array_filter($terms, function ($t) {
+      return is_object($t) || is_array($t);
+    });
+
+    // Still empty? Return early
+    if (empty($valid_terms)) {
+      return $terms;
+    }
+
+    // Get term IDs from valid terms
+    $term_ids = wp_list_pluck($valid_terms, 'term_id');
+
+    // Again, check for non-empty result
+    if (empty($term_ids)) {
+      return $terms;
+    }
+
+    // Prepare SQL safely
     $placeholders = implode(',', array_fill(0, count($term_ids), '%d'));
+    $column = self::$column;
 
-    $results = $wpdb->get_results(
-      $wpdb->prepare(
-        "SELECT term_id, meta_value FROM {$wpdb->termmeta} WHERE meta_key = %s AND term_id IN ($placeholders)",
-        $column,
-        ...$term_ids
-      ),
-      OBJECT_K
+    $query = $wpdb->prepare(
+      "SELECT term_id, meta_value FROM {$wpdb->termmeta} WHERE meta_key = %s AND term_id IN ($placeholders)",
+      array_merge([$column], $term_ids)
     );
 
+    $results = $wpdb->get_results($query, OBJECT_K);
+
+    // Assign retrieved meta values to term objects
     foreach ($terms as &$term) {
-      if (isset($results[$term->term_id])) {
-        $term->_thumbnail_id = (int) $results[$term->term_id]->meta_value;
-      } else {
-        $term->_thumbnail_id = 0;
+      if (is_object($term)) {
+        $term->$column = isset($results[$term->term_id]) ? (int) $results[$term->term_id]->meta_value : 0;
       }
     }
+
     return $terms;
   }
-
 
   public function on_delete_post($post_id)
   {

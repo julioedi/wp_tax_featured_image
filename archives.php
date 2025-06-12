@@ -8,6 +8,26 @@ class Archives
     public function __construct()
     {
         add_action("admin_menu", [$this, "register_menu_page"]);
+        add_action("delete_post", [$this, "on_delete_post"]);
+    }
+
+
+    public function on_delete_post($post_id)
+    {
+        global $wpdb;
+        $archives = "%julioedi/adv_featured/archives/%";
+        $tax = "%julioedi/adv_featured/taxonomies/category/%";
+
+        $wpdb->query(
+            $wpdb->prepare(
+                "DELETE FROM {$wpdb->options} 
+             WHERE (option_name LIKE %s OR option_name LIKE %s) 
+             AND option_value = %d",
+                $archives,
+                $tax,
+                $post_id
+            )
+        );
     }
 
     public function register_menu_page()

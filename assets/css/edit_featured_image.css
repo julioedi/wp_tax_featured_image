@@ -29,10 +29,10 @@
 .adv_custom_cover_image_column{
   width: 64px;
 }
-.column-cover_image_column{
+.column-featured_image{
   width: 40px;
 }
-.column-cover_image_column img{
+.column-featured_image img{
   width: 32px;
   height: 32px;
   object-fit: cover;
