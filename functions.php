@@ -21,6 +21,10 @@ defined('ABSPATH') || exit;
 defined("julioedi_advance_featured_image_uri") || define("julioedi_advance_featured_image_uri", plugin_dir_url(__FILE__));
 defined("julioedi_advance_featured_image_path") || define("julioedi_advance_featured_image_path", plugin_dir_path(__FILE__));
 
+function afi_load_plugin_textdomain() {
+    load_plugin_textdomain( 'julioedi-advance-featured-image', false, dirname( plugin_basename( __FILE__ ) ) . '/languages' );
+}
+add_action( 'plugins_loaded', 'afi_load_plugin_textdomain' );
 
 
 function julioedi_adv_featured_template_select_image(int $thumbnail_id, string $tag, string $input_name = '_thumbnail_id')

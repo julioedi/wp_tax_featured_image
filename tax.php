@@ -239,7 +239,7 @@ class Tax
 
     julioedi_adv_featured_template_select_image($thumbnail_id, $is_new ? "new_tag" : "edit_tag");
     $txts = array(
-      "title" => __('Select or Upload an Image', 'julioedi-advance-featured-image"'),
+      "title" => __('Select or Upload an Image', 'julioedi-advance-featured-image'),
       "text" => __('Use this image', 'julioedi-advance-featured-image')
     );
     echo "<script>window.__wp_adv_featured_image_msg = " . wp_json_encode($txts) . " </script>";

@@ -40,7 +40,7 @@ foreach ($types as $post_type) {
 }
 echo "</div>";
 
-echo '<h2 class="archives_titles">'.  __("Taxonomies") . '</h2>';
+echo '<h2 class="archives_titles">'.  __("Taxonomies","julioedi-advance-featured-image") . '</h2>';
 echo $preClass;
 foreach ($taxonomies as $key => $tax) {
     if (!$tax) {

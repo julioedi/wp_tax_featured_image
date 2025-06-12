@@ -1,0 +1,59 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Advance Featured Images\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-06-12 22:00+0000\n"
+"PO-Revision-Date: 2025-06-12 15:08-0700\n"
+"Last-Translator: \n"
+"Language-Team: Español\n"
+"Language: es_ES\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Domain: julioedi-advance-featured-image\n"
+"X-Generator: Poedit 3.0.1\n"
+
+#. Description of the plugin
+msgid "A plugin that adds featured images to taxonomies and post archives"
+msgstr "Un Plugin para usar imágenes destacadas en Taxonomias y Archivos"
+
+#. Name of the plugin
+msgid "Advance Featured Images"
+msgstr "Advance Featured Images"
+
+#: archives.php:64
+msgid "Archive render file not available"
+msgstr "El archivo de renderizado no esta disponible"
+
+#: archives.php:35
+msgid "Covers"
+msgstr "Portadas"
+
+#. Author URI of the plugin
+msgid "https://julioedi.com"
+msgstr "https://julioedi.com"
+
+#. URI of the plugin
+msgid "https://wpplugins.julioedi.com/adv_featured_image"
+msgstr "https://wpplugins.julioedi.com/adv_featured_image?lang=es"
+
+#. Author of the plugin
+msgid "Julioedi"
+msgstr "JulioEdi"
+
+#: functions.php:53
+msgid "Select featured image"
+msgstr "Seleccionar imagen destacada"
+
+#: archives_render.php:65 tax.php:242
+msgid "Select or Upload an Image"
+msgstr "Seleccionar o Cargar una Imágen"
+
+#: archives_render.php:43
+msgid "Taxonomies"
+msgstr "Taxonomias"
+
+#: archives_render.php:66 tax.php:243
+msgid "Use this image"
+msgstr "Usar esta imágen"

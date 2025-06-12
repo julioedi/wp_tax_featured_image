@@ -8,6 +8,7 @@ Stores image references in a custom `_thumbnail_id` column directly in the `wp_t
 - Displays thumbnail column in taxonomy term tables.
 - loads `_thumbnail_id` directly in `WP_Term` element.
 - Integrates into `get_term()` and `get_terms()` with filters for automatic image availability.
+- FontAwesome support for empty-state icons.
 - Admin submenu under **Settings > Covers**.
 
 ## 📂 Installation
