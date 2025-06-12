@@ -108,10 +108,10 @@ class Tax
     foreach ($wp_taxonomies as $key => $value) {
       $pre[$key] = $value->public && $value->show_ui;
     }
-    $tax = (array) apply_filters("julioedi_advance_featured_image/taxonomies/featured/edit", $pre);
+    $tax = (array) apply_filters("julioedi/adv_featured/taxonomies/featured/edit", $pre);
 
     foreach ($tax as $key => $value) {
-      $value = (bool) apply_filters("julioedi_advance_featured_image/taxonomies/featured/edit/$key", $value);
+      $value = (bool) apply_filters("julioedi/adv_featured/taxonomies/featured/edit/$key", $value);
       if (!$value) {
         continue;
       }

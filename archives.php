@@ -57,7 +57,7 @@ class Archives
 
     public function callback()
     {
-        $path = julioedi_advance_featured_image_path . "archives_render.php";
+        $path = julioedi_advanced_featured_image_path . "archives_render.php";
         if (file_exists($path)) {
             require_once $path;
         } else {

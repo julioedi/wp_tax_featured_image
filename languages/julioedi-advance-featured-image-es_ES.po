@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: Advance Featured Images\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-06-12 22:00+0000\n"
-"PO-Revision-Date: 2025-06-12 15:08-0700\n"
+"PO-Revision-Date: 2025-06-12 15:33-0700\n"
 "Last-Translator: \n"
 "Language-Team: Español\n"
 "Language: es_ES\n"
@@ -19,8 +19,8 @@ msgid "A plugin that adds featured images to taxonomies and post archives"
 msgstr "Un Plugin para usar imágenes destacadas en Taxonomias y Archivos"
 
 #. Name of the plugin
-msgid "Advance Featured Images"
-msgstr "Advance Featured Images"
+msgid "Advanced Features Images"
+msgstr "Advanced Features Images"
 
 #: archives.php:64
 msgid "Archive render file not available"

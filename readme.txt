@@ -1,4 +1,4 @@
-=== Advance Featured Image for Taxonomies ===  
+=== Advanced Featured Image for Taxonomies ===  
 Contributors: julioedi  
 Tags: taxonomy, featured image, thumbnails, term image, archives  
 Requires at least: 5.0  
@@ -12,7 +12,7 @@ A lightweight plugin to add featured images (thumbnails) to taxonomy terms and p
 
 == Description ==
 
-Advance Featured Image for Taxonomies allows you to:
+Advanced Featured Image for Taxonomies allows you to:
 
 * Add featured images to taxonomy terms like categories and tags.  
 * Display thumbnails in term listing tables in the WordPress admin.  

@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Plugin Name: Advance Featured Images
+ * Plugin Name: Advanced Features Images
  * Plugin URI: https://wpplugins.julioedi.com/adv_featured_image
  * Description: A plugin that adds featured images to taxonomies and post archives
  * Version: 1.0
@@ -18,8 +18,8 @@
 defined('ABSPATH') || exit;
 
 // Define plugin directory URI and path if not already defined
-defined("julioedi_advance_featured_image_uri") || define("julioedi_advance_featured_image_uri", plugin_dir_url(__FILE__));
-defined("julioedi_advance_featured_image_path") || define("julioedi_advance_featured_image_path", plugin_dir_path(__FILE__));
+defined("julioedi_advanced_featured_image_uri") || define("julioedi_advanced_featured_image_uri", plugin_dir_url(__FILE__));
+defined("julioedi_advanced_featured_image_path") || define("julioedi_advanced_featured_image_path", plugin_dir_path(__FILE__));
 
 function afi_load_plugin_textdomain() {
     load_plugin_textdomain( 'julioedi-advance-featured-image', false, dirname( plugin_basename( __FILE__ ) ) . '/languages' );
@@ -57,11 +57,11 @@ function julioedi_adv_featured_template_select_image(int $thumbnail_id, string $
 }
 
 // Include the core logic for the plugin
-require_once julioedi_advance_featured_image_path . "tax.php";
-require_once julioedi_advance_featured_image_path . "archives.php";
+require_once julioedi_advanced_featured_image_path . "tax.php";
+require_once julioedi_advanced_featured_image_path . "archives.php";
 
 // Trigger a custom action before the core is loaded
-do_action("julioedi_advance_featured_image_before_load");
+do_action("julioedi/adv_featured/before_load");
 
 // Instantiate the Core class
 new julioEdi\AdvanceFeaturedImage\Tax();
@@ -72,7 +72,7 @@ new julioEdi\AdvanceFeaturedImage\Archives();
 function julioedi_adv_featured_image_enqueues()
 {
   $fontAwesome = "font_awesome_all";
-  $fontAwesomeUri = julioedi_advance_featured_image_uri . "/assets/font_awesome/load.css";
+  $fontAwesomeUri = julioedi_advanced_featured_image_uri . "/assets/font_awesome/load.css";
 
   // Register the style only if it hasn't been registered yet
   if (!wp_style_is($fontAwesome, "registered")) {
@@ -80,7 +80,7 @@ function julioedi_adv_featured_image_enqueues()
   }
 
   $generateCSS = "generate_css";
-  $generateCSSUri = julioedi_advance_featured_image_uri . "/assets/js/generatecss.min.js";
+  $generateCSSUri = julioedi_advanced_featured_image_uri . "/assets/js/generatecss.min.js";
   if (!wp_script_is('generate_css')) {
     wp_register_script($generateCSS, $generateCSSUri, [], "1.0.0", false);
   }
@@ -94,9 +94,9 @@ function julioedi_adv_featured_image_admin_assets($hook)
   // Asegúrate que solo cargue donde lo necesitas
   if (in_array($hook, ["edit-tags.php", "term.php", 'settings_page_adv_featured_image'])) {
     wp_enqueue_style("font_awesome_all");
-    wp_enqueue_style("julioedi_featured_image_css", julioedi_advance_featured_image_uri . "/assets/css/edit_featured_image.css");
+    wp_enqueue_style("julioedi_featured_image_css", julioedi_advanced_featured_image_uri . "/assets/css/edit_featured_image.css");
     wp_enqueue_script("generate_css");
-    wp_enqueue_script("julioedi_adv_featured_image_edit", julioedi_advance_featured_image_uri . "/assets/js/edit_featured_image.js", ['jquery'], null, true);
+    wp_enqueue_script("julioedi_adv_featured_image_edit", julioedi_advanced_featured_image_uri . "/assets/js/edit_featured_image.js", ['jquery'], null, true);
     
     wp_enqueue_media(); // Solo si necesitas el uploader
   }
@@ -137,7 +137,7 @@ function get_post_archive_thumbnail_id(string|null $name = null): int
 function get_post_archive_thumbnail(int $post_type): string
 {
   $thumbnail_id = get_post_archive_thumbnail_id($post_type);
-  return apply_filters("julioedi_advance_featured_image/post_archive_thumbnail", wp_get_attachment_image($thumbnail_id), $post_type);
+  return apply_filters("julioedi/adv_featured/post_archive_thumbnail", wp_get_attachment_image($thumbnail_id), $post_type);
 }
 
 
@@ -169,4 +169,4 @@ function get_taxonomy_archive_thumbnail(string|null $name = null, $size = 'thumb
 
 
 // Trigger a custom action after the core is loaded
-do_action("julioedi_advance_featured_image_load");
+do_action("julioedi/adv_featured/loaded");

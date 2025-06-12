@@ -1,4 +1,4 @@
-# Advance Featured Image for Taxonomies
+# Advanced Featured Image for Taxonomies
 
 **A lightweight WordPress plugin to add featured images (thumbnails) to taxonomy terms.**
 Stores image references in a custom `_thumbnail_id` column directly in the `wp_terms` table to minimize extra queries and optimize performance.
