@@ -1,8 +1,8 @@
 <?php
 
-namespace julioEdi\featuredTaxonomy;
+namespace julioEdi\AdvanceFeaturedImage;
 
-class Core
+class Tax
 {
   public $taxonomy_table_col_id = "cover_image_column";
   public $featured_media_taxonomies = [
@@ -18,11 +18,10 @@ class Core
   {
     $this->edit();
     $this->save();
-    add_action('init', [$this, 'font_awesome']); // Register Font Awesome on init
     add_action("admin_init", function () {
       self::taxonomies_featured_image();
     });
-    add_action("admin_head", [$this, "enqueue_admin"]);
+    // add_action("admin_head", [$this, "enqueue_admin"]);
     add_action("delete_post", [$this, "on_delete_post"]);
   }
 
@@ -39,19 +38,9 @@ class Core
 
   public function on_activate()
   {
-    // register_activation_hook(julioedi_featured_taxonomy_path, );
+    // register_activation_hook(julioedi_advance_featured_image_path, );
   }
 
-  public function font_awesome()
-  {
-    $name = "font_awesome_all";
-    $url = julioedi_featured_taxonomy_uri . "/assets/font_awesome/load.css";
-
-    // Register the style only if it hasn't been registered yet
-    if (!wp_style_is($name, "registered")) {
-      wp_register_style($name, $url, [], "6.0", "all");
-    }
-  }
 
 
   /**
@@ -66,10 +55,10 @@ class Core
     foreach ($wp_taxonomies as $key => $value) {
       $pre[$key] = $value->public && $value->show_ui;
     }
-    $tax = (array) apply_filters("julioedi_featured_taxonomy/taxonomies/featured/edit", $pre);
+    $tax = (array) apply_filters("julioedi_advance_featured_image/taxonomies/featured/edit", $pre);
 
     foreach ($tax as $key => $value) {
-      $value = (bool) apply_filters("julioedi_featured_taxonomy/taxonomies/featured/edit/$key", $value);
+      $value = (bool) apply_filters("julioedi_advance_featured_image/taxonomies/featured/edit/$key", $value);
       if (!$value) {
         continue;
       }
@@ -82,16 +71,6 @@ class Core
   }
 
 
-  public function enqueue_admin()
-  {
-    global $pagenow;
-    if (in_array($pagenow, ["term.php", "edit-tags.php"])) {
-      self::enqueue_font_awesome();
-      wp_enqueue_media();
-      wp_enqueue_style(self::$column . "-tax_edit", julioedi_featured_taxonomy_uri . "/assets/css/edit_taxonomy.css");
-      wp_enqueue_script(self::$column . "-tax_edit", julioedi_featured_taxonomy_uri . "/assets/js/edit_taxonomy.js");
-    }
-  }
 
   public static function enqueue_font_awesome()
   {
@@ -112,7 +91,7 @@ class Core
    */
   public static function taxonomies_featured_image(bool $default = false)
   {
-    $activated = false; //get_option("julioedi_featured_taxonomy_inited",$default);
+    $activated = false; //get_option("julioedi_advance_featured_image_inited",$default);
     if ($activated) {
       return;
     }
@@ -129,9 +108,9 @@ class Core
     // If the column doesn't exist, create it
     if (empty($column_exists)) {
       $wpdb->query(
-        "ALTER TABLE `$table_name` ADD {$column} BIGINT UNSIGNED DEFAULT 0 COMMENT 'https://wpplugins.julioedi.com/tax_featured_image'"
+        "ALTER TABLE `$table_name` ADD {$column} BIGINT UNSIGNED DEFAULT 0"
       );
-      update_option("julioedi_featured_taxonomy_inited", true);
+      update_option("julioedi_advance_featured_image_inited", true);
     }
   }
 
@@ -237,19 +216,13 @@ class Core
       // If there's an image, show it with a delete button
       $is_image = sprintf('<img src="%s" data-id="%s">' . $deletebtn, $is_image, $thumbnail_id);
     }
-
-    $preview = sprintf('<div id="preview_cover">%s</div>', $is_image);
-    ?>
-    <div id="cover_image" class="form-field term-thumbnail_id-wrap <?php echo $is_new ? "new_tag" : "edit_tag" ?>">
-      <div id="cover_image_input_wrap">
-        <input id="thumbnail_id" type="text" name="_thumbnail_id" value="<?php echo $list["_thumbnail_id"] ?? "0"  ?>">
-      </div>
-      <?php echo $preview ?>
-      <div id="cover_no_image">
-        <div class="tax_btn"><?php _e("Select featured image", theme_lang) ?></div>
-      </div>
-    </div>
-<?php
+    
+    julioedi_adv_featured_template_select_image($thumbnail_id,$is_new ? "new_tag" : "edit_tag");
+    $txts = array(
+      "title" => __('Select or Upload an Image','julioedi_advance_featured_image_path'),
+      "text" => __('Use this image','julioedi_advance_featured_image_path')
+    );
+    echo "<script>window.__wp_adv_featured_image_msg = " . json_encode($txts) ." </script>";
 
     if ($is_new) {
       // Close the form tag
