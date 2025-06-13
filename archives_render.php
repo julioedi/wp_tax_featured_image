@@ -4,25 +4,51 @@ $col = \julioEdi\AdvanceFeaturedImage\Tax::$column;
 $post_key = "julioedi/adv_featured/archives";
 $tax_key = "julioedi/adv_featured/taxonomies";
 
-// $noValidate = !isset($_POST["{$col}_nonce"]) || !wp_verify_nonce($_POST["{$col}_nonce"], "save_archive{$col}");
-if (isset($_POST["{$col}_nonce"]) && wp_verify_nonce($_POST["{$col}_nonce"], "save_archive{$col}")) {
-    if (isset($_POST["thumbnails"]) && is_array($_POST["thumbnails"])) {
-        if (is_array(($_POST["thumbnails"]["post_types"]))) {
-            foreach ($_POST["thumbnails"]["post_types"] as $key => $value) {
-                if (is_numeric(($value))) {
-                    update_option("$post_key/$key", $value);
-                }
+$col_action = wp_unslash("save_archive{$col}");
+$col_nonce = sanitize_text_field(wp_unslash($_POST["{$col}_nonce"] ?? ""));
+if ($col_nonce && wp_verify_nonce($col_nonce, $col_action)) {
+
+    $post_types = array_map("sanitize_text_field", wp_unslash($_POST["post_types"] ?? []));
+    $taxonomies = array_map("sanitize_text_field", wp_unslash($_POST["taxonomies"] ?? []));
+
+    if (is_array($post_types)) {
+        foreach ($post_types as $key => $value) {
+            if (is_numeric(($value))) {
+                update_option("$post_key/$key", $value);
             }
         }
-        if (is_array(($_POST["thumbnails"]["taxonomies"]))) {
-            foreach ($_POST["thumbnails"]["taxonomies"] as $key => $value) {
-                if (is_numeric(($value))) {
-                    update_option("$tax_key/$key", $value);
-                }
+    }
+
+    if (is_array($taxonomies)) {
+        foreach ($taxonomies as $key => $value) {
+            if (is_numeric(($value))) {
+                update_option("$tax_key/$key", $value);
             }
         }
     }
 }
+/*
+// $col_nonce = empty($_POST["{$col}_nonce"]) ? null : sanitize_text_field($_POST["{$col}_nonce"]);
+$col_action = wp_unslash("save_archive{$col}");
+if ($col_nonce && wp_verify_nonce($col_nonce, $col_action)) {
+    $post_types = empty($_POST["post_types"]) ? null : array_map("sanitize_text_field",$_POST["post_types"]);
+    $taxonomies = empty($_POST["taxonomies"]) ? null : array_map("sanitize_text_field",$_POST["taxonomies"]);
+    if (is_array($post_types)) {
+        foreach ($post_types as $key => $value) {
+            if (is_numeric(($value))) {
+                update_option("$post_key/$key", $value);
+            }
+        }
+    }
+    if (is_array($taxonomies)) {
+        foreach ($taxonomies as $key => $value) {
+            if (is_numeric(($value))) {
+                update_option("$tax_key/$key", $value);
+            }
+        }
+    }
+}
+    */
 global $wp_taxonomies;
 foreach ($wp_taxonomies as $key => $value) {
     $pre[$key] = $value->public && $value->show_ui ? $value : null;
@@ -42,7 +68,7 @@ $admin_url = admin_url("options-general.php?page=adv_featured_image");
         ?>
             <div class='archive-item' id="archive_<?php echo esc_html($post_type) ?>">
                 <h3><?php echo esc_html($title->labels->name) ?></h3>
-                <?php julioedi_adv_featured_template_select_image($thumbnail_id, "archive_img", "thumbnails[post_types][$post_type]"); ?>
+                <?php julioedi_adv_featured_template_select_image($thumbnail_id, "archive_img", "post_types[$post_type]"); ?>
             </div>
         <?php endforeach; ?>
     </div>
@@ -57,7 +83,7 @@ $admin_url = admin_url("options-general.php?page=adv_featured_image");
         ?>
             <div class='archive-item' id='tax_<?php echo esc_html($key) ?>'>
                 <h3><?php echo esc_html($title) ?></h3>
-                <?php julioedi_adv_featured_template_select_image($thumbnail_id, "archive_img", "thumbnails[taxonomies][$key]"); ?>
+                <?php julioedi_adv_featured_template_select_image($thumbnail_id, "archive_img", "taxonomies[$key]"); ?>
             </div>
         <?php endforeach; ?>
     </div>

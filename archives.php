@@ -12,23 +12,44 @@ class Archives
     }
 
 
+    // public function on_delete_post($post_id)
+    // {
+    //     global $wpdb;
+    //     $archives = "%julioedi/adv_featured/archives/%";
+    //     $tax = "%julioedi/adv_featured/taxonomies/category/%";
+
+    //     $wpdb->query(
+    //         $wpdb->prepare(
+    //             "DELETE FROM {$wpdb->options} 
+    //          WHERE (option_name LIKE %s OR option_name LIKE %s) 
+    //          AND option_value = %d",
+    //             $archives,
+    //             $tax,
+    //             $post_id
+    //         )
+    //     );
+    // }
     public function on_delete_post($post_id)
     {
-        global $wpdb;
-        $archives = "%julioedi/adv_featured/archives/%";
-        $tax = "%julioedi/adv_featured/taxonomies/category/%";
+        // Fetch all options
+        $options = get_option('alloptions');
 
-        $wpdb->query(
-            $wpdb->prepare(
-                "DELETE FROM {$wpdb->options} 
-             WHERE (option_name LIKE %s OR option_name LIKE %s) 
-             AND option_value = %d",
-                $archives,
-                $tax,
-                $post_id
-            )
-        );
+        if ($options) {
+            // Regex to match options starting with 'julioedi/adv_featured/archives/' or 'julioedi/adv_featured/taxonomies/category/'
+            $reg = "/^julioedi\/adv_featured\/(archives\/|taxonomies\/category\/)/";
+
+            foreach ($options as $option_name => $option_value) {
+                // Check if the option name matches the regex pattern
+                if (preg_match($reg, $option_name)) {
+                    // If option value matches the post_id, delete the option
+                    if ($option_value == $post_id) {
+                        delete_option($option_name);
+                    }
+                }
+            }
+        }
     }
+
 
     public function register_menu_page()
     {
@@ -61,7 +82,7 @@ class Archives
         if (file_exists($path)) {
             require_once $path;
         } else {
-            echo esc_html('<div class="notice notice-error"><p>Error: ' . __("Archive render file not available","julioedi-advance-featured-image") . '</p></div>');
+            echo esc_html('<div class="notice notice-error"><p>Error: ' . __("Archive render file not available", "julioedi-advance-featured-image") . '</p></div>');
         }
     }
 }

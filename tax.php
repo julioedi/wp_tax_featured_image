@@ -56,18 +56,23 @@ class Tax
 
   public function on_delete_post($post_id)
   {
-    global $wpdb;
     $meta_key = self::$column;
-
+    $term_ids = get_terms(array(
+      'meta_query' => array(
+        array(
+          'key'     => $meta_key, // The custom field key
+          'value'   => $post_id,         // The value you are looking for
+          'compare' => '=',          // Comparison operator
+        ),
+      ),
+      'fields' => 'ids', // Optional: if you only want the term IDs
+    ));
     // Delete all term meta entries where meta_key = '_thumbnail_id' and meta_value = $post_id
-    $wpdb->query(
-      $wpdb->prepare(
-        "DELETE FROM {$wpdb->termmeta} WHERE meta_key = %s AND meta_value = %d",
-        $meta_key,
-        $post_id
-      )
-    );
+    foreach ($term_ids as $term_id) {
+      delete_term_meta($term_id, $meta_key);
+    }
   }
+
 
 
   /**
@@ -146,11 +151,6 @@ class Tax
   }
 
 
-  public function get_sanitized_thumbnail_id(): int
-  {
-    $column = self::$column;
-    return isset($_POST[$column]) && wp_attachment_is_image($_POST[$column]) ? absint($_POST[$column]) : 0;
-  }
 
   /**
    * Saves the selected thumbnail ID when a term is created or edited
@@ -162,7 +162,11 @@ class Tax
     }
 
     $col = self::$column;
-    if (!isset($_POST["{$col}_nonce"]) || !wp_verify_nonce($_POST["{$col}_nonce"], "save_term{$col}")) {
+
+
+    $col_nonce = sanitize_text_field(wp_unslash($_POST["{$col}_nonce"] ?? ""));
+    $col_action = wp_unslash("save_term{$col}");
+    if (!$col_nonce || !wp_verify_nonce($col_nonce, $col_action)) {
       return;
     }
 
@@ -199,16 +203,8 @@ class Tax
     $column = self::$column;
     $list = (array) $tag;
     $thumbnail_id = $list[$column] ?? "0";
-    $is_image = wp_get_attachment_url($thumbnail_id);
-
 
     wp_nonce_field("save_term{$column}", "{$column}_nonce");
-    $deletebtn = '<div class="delete_cover"><div class="tax_icon_button"><i class="fa-solid fa-trash"></i></div></div>';
-
-    if (!empty($is_image)) {
-      // If there's an image, show it with a delete button
-      $is_image = sprintf('<img src="%s" data-id="%s">' . $deletebtn, $is_image, $thumbnail_id);
-    }
 
     julioedi_adv_featured_template_select_image($thumbnail_id, $is_new ? "new_tag" : "edit_tag");
     $txts = array(

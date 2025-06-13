@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Plugin Name: Advanced Features Images
+ * Plugin Name: Advanced Featured Images
  * Plugin URI: https://wpplugins.julioedi.com/adv_featured_image
  * Description: A plugin that adds featured images to taxonomies and post archives
  * Version: 1.0
@@ -89,7 +89,7 @@ function julioedi_adv_featured_image_admin_assets($hook)
   // Asegúrate que solo cargue donde lo necesitas
   if (in_array($hook, ["edit-tags.php", "term.php", 'settings_page_adv_featured_image'])) {
     wp_enqueue_style("font_awesome_all");
-    wp_enqueue_style("julioedi_featured_image_css", julioedi_advanced_featured_image_uri . "/assets/css/edit_featured_image.css","1.0.0");
+    wp_enqueue_style("julioedi_featured_image_css", julioedi_advanced_featured_image_uri . "/assets/css/edit_featured_image.css",[],"1.0.0");
     wp_enqueue_script("generate_css");
     wp_enqueue_script("julioedi_adv_featured_image_edit", julioedi_advanced_featured_image_uri . "/assets/js/edit_featured_image.js", ['jquery'], "1.0.0", true);
 
@@ -165,3 +165,29 @@ function get_taxonomy_archive_thumbnail(string|null $name = null, $size = 'thumb
 
 // Trigger a custom action after the core is loaded
 do_action("julioedi/adv_featured/loaded");
+
+// add_action("frontend/content/before",function(){
+//     $meta_key = '_thumbnail_id';
+//     $keys = [];
+//     global $wp_taxonomies;
+//     foreach ($wp_taxonomies as $key => $value) {
+//       $keys[] = $key;
+//     }
+//     // Get all term IDs associated with the post
+//     $term_ids = get_term_meta([75,"75"], $keys, array(
+//       'fields' => 'ids',
+//     )); // Adjust taxonomy as needed
+//     echo "<pre>";
+//     $terms = get_terms(array(
+//       'meta_query' => array(
+//         array(
+//             'key'     => $meta_key, // The custom field key
+//             'value'   => 75,         // The value you are looking for
+//             'compare' => '=',          // Comparison operator
+//         ),
+//     ),
+//     'fields' => 'ids', // Optional: if you only want the term IDs
+//     ));
+//     echo json_encode($terms,JSON_PRETTY_PRINT);
+//     echo "</pre>";
+// });
