@@ -61,7 +61,7 @@ class Archives
         if (file_exists($path)) {
             require_once $path;
         } else {
-            echo '<div class="notice notice-error"><p>Error: ' . __("Archive render file not available","julioedi-advance-featured-image") . '</p></div>';
+            echo esc_html('<div class="notice notice-error"><p>Error: ' . __("Archive render file not available","julioedi-advance-featured-image") . '</p></div>');
         }
     }
 }

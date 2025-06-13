@@ -109,7 +109,8 @@
   box-sizing: border-box ;
   padding: 16px 0;
   line-height: 1;
-  margin:0;
+  margin-top:0;
+  margin-bottom: 16px;
   font-size: clamp(20px, 4vw, 32px);
   border-bottom: 1px solid color-mix(in srgb, transparent 90%, currentcolor);
 }

@@ -1,4 +1,4 @@
-=== Advanced Featured Image for Taxonomies ===  
+=== Advanced Featured Images ===  
 Contributors: julioedi  
 Tags: taxonomy, featured image, thumbnails, term image, archives  
 Requires at least: 5.0  

@@ -9,7 +9,7 @@
  * Author URI: https://julioedi.com
  * License: GPL2
  * Text Domain: julioedi-advance-featured-image
- * 
+ *
  * This plugin uses Font Awesome, available under the SIL Open Font License (OFL).
  * Font Awesome: https://fontawesome.com/
  */
@@ -29,28 +29,23 @@ add_action( 'plugins_loaded', 'afi_load_plugin_textdomain' );
 
 function julioedi_adv_featured_template_select_image(int $thumbnail_id, string $tag, string $input_name = '_thumbnail_id')
 {
-  $is_image = wp_get_attachment_url($thumbnail_id);
+  $is_image = get_post($thumbnail_id);
   $deletebtn = '<div class="delete_cover"><div class="tax_icon_button"><i class="fa-solid fa-trash"></i></div></div>';
-  if (!empty($is_image)) {
+  if (empty($is_image)) {
     // If there's an image, show it with a delete button
-    $is_image = sprintf(
-      '<img src="%s" data-id="%s">%s',
-      esc_url($is_image),
-      esc_attr($thumbnail_id),
-      $deletebtn
-    );
-  } else {
     $thumbnail_id = "0";
   }
-  $preview = sprintf('<div class="adv_custom_preview_cover">%s</div>', $is_image);
 ?>
-  <div class="adv_custom_cover_image form-field term-thumbnail_id-wrap <?php echo $tag ?>">
+  <div class="adv_custom_cover_image form-field term-thumbnail_id-wrap <?php echo esc_html($tag )?>">
     <div class="adv_custom_cover_image_input_wrap">
-      <input type="text" name="<?php echo $input_name ?>" value="<?php echo $thumbnail_id  ?>" hidden>
+      <input type="text" name="<?php echo esc_html($input_name) ?>" value="<?php echo esc_html($thumbnail_id)  ?>" hidden>
     </div>
-    <?php echo $preview ?>
+    <div class="adv_custom_preview_cover"><?php if ( !empty($is_image) ): ?>
+        <?php echo wp_get_attachment_image($thumbnail_id,false,array("data-id"=> $thumbnail_id)) ?>
+        <div class="delete_cover"><div class="tax_icon_button"><i class="fa-solid fa-trash"></i></div></div>
+    <?php endif; ?></div>
     <div class="adv_custom_cover_no_image">
-      <div class="tax_btn"><?php _e("Select featured image", "julioedi-advance-featured-image") ?></div>
+      <div class="tax_btn"><?php esc_html_e("Select featured image", "julioedi-advance-featured-image") ?></div>
     </div>
   </div>
 <?php
@@ -94,10 +89,10 @@ function julioedi_adv_featured_image_admin_assets($hook)
   // Asegúrate que solo cargue donde lo necesitas
   if (in_array($hook, ["edit-tags.php", "term.php", 'settings_page_adv_featured_image'])) {
     wp_enqueue_style("font_awesome_all");
-    wp_enqueue_style("julioedi_featured_image_css", julioedi_advanced_featured_image_uri . "/assets/css/edit_featured_image.css");
+    wp_enqueue_style("julioedi_featured_image_css", julioedi_advanced_featured_image_uri . "/assets/css/edit_featured_image.css","1.0.0");
     wp_enqueue_script("generate_css");
-    wp_enqueue_script("julioedi_adv_featured_image_edit", julioedi_advanced_featured_image_uri . "/assets/js/edit_featured_image.js", ['jquery'], null, true);
-    
+    wp_enqueue_script("julioedi_adv_featured_image_edit", julioedi_advanced_featured_image_uri . "/assets/js/edit_featured_image.js", ['jquery'], "1.0.0", true);
+
     wp_enqueue_media(); // Solo si necesitas el uploader
   }
 }
