@@ -16,11 +16,13 @@ class Tax
 
   public function __construct()
   {
-    $this->edit();
-    $this->save();
     add_action("delete_post", [$this, "on_delete_post"]);
     add_filter("get_term", [$this, "single_term"], 1);
     add_filter("get_terms", [$this, "all_terms"], 1);
+    add_action("init", function () {
+      $this->edit();
+      $this->save();
+    });
   }
 
   public function single_term($term)
@@ -198,7 +200,7 @@ class Tax
 
     if ($is_new) {
       // Close the form tag early to prevent open tags
-      echo ">";
+      // echo ">";
     }
     $column = self::$column;
     $list = (array) $tag;
