@@ -1,0 +1,27 @@
+name: Deploy to FTP
+
+on:
+  push:
+    branches:
+      - Main  # deploy branch
+
+jobs:
+  ftp-deploy:
+    name: Deploy via FTP
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Upload to FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+        with:
+          server: ${{ secrets.FTP_HOST }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: ./  # uploading repo
+          server-dir: ${{ secrets.FTP_PATH }}  # secret route to themes
+          protocol: ftp
+          log-level: verbose
